@@ -512,6 +512,7 @@ final class HttpClientConnect extends HttpClient {
 			this.websocketProtocols = configuration.websocketSubprotocols;
 			this.maxFramePayloadLength = configuration.websocketMaxFramePayloadLength;
 			this.websocketProxyPing = configuration.websocketProxyPing;
+			this.retried = !configuration.retryEnabled;
 			this.handler = configuration.body;
 			this.toURI = uriEndpointFactory.createUriEndpoint(uri, configuration.websocketSubprotocols != null);
 		}

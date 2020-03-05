@@ -1321,6 +1321,15 @@ public class HttpClientTest {
 
 	@Test
 	public void testRetryNotEndlessIssue587() throws Exception {
+		doTestRetry(false);
+	}
+
+	@Test
+	public void testRetryDisabledIssue995() throws Exception {
+		doTestRetry(true);
+	}
+
+	private void doTestRetry(boolean retryDisabled) throws Exception {
 		ExecutorService threadPool = Executors.newCachedThreadPool();
 		int serverPort = SocketUtils.findAvailableTcpPort();
 		ConnectionResetByPeerServer server = new ConnectionResetByPeerServer(serverPort);
@@ -1329,17 +1338,34 @@ public class HttpClientTest {
 			throw new IOException("fail to start test server");
 		}
 
-		StepVerifier.create(
-		        HttpClient.create()
-		                  .port(serverPort)
-		                  .wiretap(true)
-		                  .get()
-		                  .uri("/")
-		                  .responseContent())
-		            .expectErrorMatches(t -> t.getMessage() != null &&
-		                    (t.getMessage().contains("Connection reset by peer") ||
-		                            t.getMessage().contains("Connection prematurely closed BEFORE response")))
+		AtomicInteger counter = new AtomicInteger();
+		HttpClient client =
+				HttpClient.create()
+				          .port(serverPort)
+				          .wiretap(true)
+				          .doOnRequest((req, conn) -> counter.getAndIncrement());
+
+		if (retryDisabled) {
+			client = client.retry(false);
+		}
+
+		AtomicReference<Throwable> error = new AtomicReference<>();
+		StepVerifier.create(client.get()
+		                          .uri("/")
+		                          .responseContent())
+		            .expectErrorMatches(t -> {
+		                error.set(t);
+		                return t.getMessage() != null &&
+		                               (t.getMessage().contains("Connection reset by peer") ||
+		                                        t.getMessage().contains("Connection prematurely closed BEFORE response"));
+		            })
 		            .verify(Duration.ofSeconds(30));
+
+		int expectedCount = 1;
+		if (!retryDisabled && !(error.get() instanceof PrematureCloseException)) {
+			expectedCount = 2;
+		}
+		assertThat(counter.get()).isEqualTo(expectedCount);
 
 		server.close();
 		assertThat(serverFuture.get()).isNull();
