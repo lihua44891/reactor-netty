@@ -1338,15 +1338,17 @@ public class HttpClientTest {
 			throw new IOException("fail to start test server");
 		}
 
-		AtomicInteger counter = new AtomicInteger();
+		AtomicInteger doOnRequest = new AtomicInteger();
+		AtomicInteger doOnRetryEnabled = new AtomicInteger();
 		HttpClient client =
 				HttpClient.create()
 				          .port(serverPort)
 				          .wiretap(true)
-				          .doOnRequest((req, conn) -> counter.getAndIncrement());
+				          .doOnRequest((req, conn) -> doOnRequest.getAndIncrement())
+				          .doOnRetryEnabled((res, t) -> doOnRetryEnabled.getAndIncrement());
 
 		if (retryDisabled) {
-			client = client.retry(false);
+			client = client.retryEnabled(false);
 		}
 
 		AtomicReference<Throwable> error = new AtomicReference<>();
@@ -1361,11 +1363,14 @@ public class HttpClientTest {
 		            })
 		            .verify(Duration.ofSeconds(30));
 
-		int expectedCount = 1;
+		int requestCount = 1;
+		int retriedCount = 0;
 		if (!retryDisabled && !(error.get() instanceof PrematureCloseException)) {
-			expectedCount = 2;
+			requestCount = 2;
+			retriedCount = 1;
 		}
-		assertThat(counter.get()).isEqualTo(expectedCount);
+		assertThat(doOnRequest.get()).isEqualTo(requestCount);
+		assertThat(doOnRetryEnabled.get()).isEqualTo(retriedCount);
 
 		server.close();
 		assertThat(serverFuture.get()).isNull();

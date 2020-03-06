@@ -568,7 +568,7 @@ public abstract class HttpClient {
 	 */
 	public final HttpClient doOnRequest(BiConsumer<? super HttpClientRequest, ? super Connection> doOnRequest) {
 		Objects.requireNonNull(doOnRequest, "doOnRequest");
-		return new HttpClientDoOn(this, doOnRequest, null, null, null, null, null);
+		return new HttpClientDoOn(this, doOnRequest, null, null, null, null, null, null);
 	}
 
 	/**
@@ -596,7 +596,7 @@ public abstract class HttpClient {
 	 */
 	public final HttpClient doAfterRequest(BiConsumer<? super HttpClientRequest, ? super Connection> doAfterRequest) {
 		Objects.requireNonNull(doAfterRequest, "doAfterRequest");
-		return new HttpClientDoOn(this, null, doAfterRequest, null, null, null, null);
+		return new HttpClientDoOn(this, null, doAfterRequest, null, null, null, null, null);
 	}
 
 	/**
@@ -609,7 +609,7 @@ public abstract class HttpClient {
 	 */
 	public final HttpClient doOnResponse(BiConsumer<? super HttpClientResponse, ? super Connection> doOnResponse) {
 		Objects.requireNonNull(doOnResponse, "doOnResponse");
-		return new HttpClientDoOn(this, null, null, doOnResponse, null, null, null);
+		return new HttpClientDoOn(this, null, null, doOnResponse, null, null, null, null);
 	}
 
 	/**
@@ -627,7 +627,7 @@ public abstract class HttpClient {
 	 */
 	public final HttpClient doOnRedirect(BiConsumer<? super HttpClientResponse, ? super Connection> doOnRedirect) {
 		Objects.requireNonNull(doOnRedirect, "doOnRedirect");
-		return new HttpClientDoOn(this, null, null, null, null, null, doOnRedirect);
+		return new HttpClientDoOn(this, null, null, null, null, null, doOnRedirect, null);
 	}
 
 	/**
@@ -661,7 +661,7 @@ public abstract class HttpClient {
 	@Deprecated
 	public final HttpClient doAfterResponse(BiConsumer<? super HttpClientResponse, ? super Connection> doAfterResponse) {
 		Objects.requireNonNull(doAfterResponse, "doAfterResponse");
-		return new HttpClientDoOn(this, null, null, null, doAfterResponse, null, null);
+		return new HttpClientDoOn(this, null, null, null, doAfterResponse, null, null, null);
 	}
 
 	/**
@@ -675,7 +675,22 @@ public abstract class HttpClient {
 	 */
 	public final HttpClient doAfterResponseSuccess(BiConsumer<? super HttpClientResponse, ? super Connection> doAfterResponseSuccess) {
 		Objects.requireNonNull(doAfterResponseSuccess, "doAfterResponseSuccess");
-		return new HttpClientDoOn(this, null, null, null, null, doAfterResponseSuccess, null);
+		return new HttpClientDoOn(this, null, null, null, null, doAfterResponseSuccess, null, null);
+	}
+
+	/**
+	 * Setup a callback called when {@link HttpClientResponse} failed with
+	 * {@link reactor.netty.channel.AbortedException#isConnectionReset(Throwable)}
+	 * and {@link HttpClientState#RETRY_ENABLED} has been emitted.
+	 *
+	 * @param doOnRetryEnabled a callback called when {@link HttpClientResponse} failed with
+	 * {@link reactor.netty.channel.AbortedException#isConnectionReset(Throwable)}
+	 *
+	 * @return a new {@link HttpClient}
+	 */
+	public final HttpClient doOnRetryEnabled(BiConsumer<? super HttpClientResponse, ? super Connection> doOnRetryEnabled) {
+		Objects.requireNonNull(doOnRetryEnabled, "doOnRetryEnabled");
+		return new HttpClientDoOn(this, null, null, null, null, null, null, doOnRetryEnabled);
 	}
 
 	/**
@@ -743,7 +758,7 @@ public abstract class HttpClient {
 	 *
 	 * @return a new {@link HttpClient}
 	 */
-	public final HttpClient retry(boolean retryEnabled) {
+	public final HttpClient retryEnabled(boolean retryEnabled) {
 		if (retryEnabled) {
 			return tcpConfiguration(RETRY_ATTR_CONFIG);
 		}

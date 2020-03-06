@@ -43,6 +43,15 @@ public enum HttpClientState implements ConnectionObserver.State {
 		}
 	},
 	/**
+	 * The request is about to be retried
+	 */
+	RETRY_ENABLED() {
+		@Override
+		public String toString() {
+			return "[retry_enabled]";
+		}
+	},
+	/**
 	 * The request has been sent but the response has not been fully received and the
 	 * connection has been prematurely closed
 	 */
