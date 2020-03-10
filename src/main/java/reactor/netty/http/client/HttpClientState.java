@@ -25,6 +25,15 @@ import reactor.netty.ConnectionObserver;
  */
 public enum HttpClientState implements ConnectionObserver.State {
 	/**
+	 * The request is about to be retried
+	 */
+	RETRYING() {
+		@Override
+		public String toString() {
+			return "[retrying]";
+		}
+	},
+	/**
 	 * The request has been prepared and ready for I/O handler to be invoked
 	 */
 	REQUEST_PREPARED() {
@@ -40,15 +49,6 @@ public enum HttpClientState implements ConnectionObserver.State {
 		@Override
 		public String toString() {
 			return "[request_sent]";
-		}
-	},
-	/**
-	 * The request is about to be retried
-	 */
-	RETRY_ENABLED() {
-		@Override
-		public String toString() {
-			return "[retry_enabled]";
 		}
 	},
 	/**

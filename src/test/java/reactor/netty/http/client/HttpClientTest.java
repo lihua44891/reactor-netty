@@ -1339,16 +1339,16 @@ public class HttpClientTest {
 		}
 
 		AtomicInteger doOnRequest = new AtomicInteger();
-		AtomicInteger doOnRetryEnabled = new AtomicInteger();
+		AtomicInteger doOnRetry = new AtomicInteger();
 		HttpClient client =
 				HttpClient.create()
 				          .port(serverPort)
 				          .wiretap(true)
 				          .doOnRequest((req, conn) -> doOnRequest.getAndIncrement())
-				          .doOnRetryEnabled((res, t) -> doOnRetryEnabled.getAndIncrement());
+				          .doOnRetry((res, t) -> doOnRetry.getAndIncrement());
 
 		if (retryDisabled) {
-			client = client.retryEnabled(false);
+			client = client.disableRetry(true);
 		}
 
 		AtomicReference<Throwable> error = new AtomicReference<>();
@@ -1370,7 +1370,7 @@ public class HttpClientTest {
 			retriedCount = 1;
 		}
 		assertThat(doOnRequest.get()).isEqualTo(requestCount);
-		assertThat(doOnRetryEnabled.get()).isEqualTo(retriedCount);
+		assertThat(doOnRetry.get()).isEqualTo(retriedCount);
 
 		server.close();
 		assertThat(serverFuture.get()).isNull();

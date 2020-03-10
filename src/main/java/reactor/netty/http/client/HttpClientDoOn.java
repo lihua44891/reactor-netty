@@ -38,7 +38,7 @@ final class HttpClientDoOn extends HttpClientOperator implements ConnectionObser
 	final BiConsumer<? super HttpClientResponse, ? super Connection> afterResponse;
 	final BiConsumer<? super HttpClientResponse, ? super Connection> afterResponseSuccess;
 	final BiConsumer<? super HttpClientResponse, ? super Connection> onRedirect;
-	final BiConsumer<? super HttpClientResponse, ? super Connection> onRetryEnabled;
+	final BiConsumer<? super HttpClientResponse, ? super Connection> onRetry;
 
 
 	HttpClientDoOn(HttpClient client,
@@ -48,7 +48,7 @@ final class HttpClientDoOn extends HttpClientOperator implements ConnectionObser
 			@Nullable BiConsumer<? super HttpClientResponse,  ? super Connection> afterResponse,
 			@Nullable BiConsumer<? super HttpClientResponse,  ? super Connection> afterResponseSuccess,
 			@Nullable BiConsumer<? super HttpClientResponse, ? super Connection> onRedirect,
-			@Nullable BiConsumer<? super HttpClientResponse, ? super Connection> onRetryEnabled) {
+			@Nullable BiConsumer<? super HttpClientResponse, ? super Connection> onRetry) {
 		super(client);
 		this.onRequest = onRequest;
 		this.afterRequest = afterRequest;
@@ -56,7 +56,7 @@ final class HttpClientDoOn extends HttpClientOperator implements ConnectionObser
 		this.afterResponse = afterResponse;
 		this.afterResponseSuccess = afterResponseSuccess;
 		this.onRedirect = onRedirect;
-		this.onRetryEnabled = onRetryEnabled;
+		this.onRetry = onRetry;
 	}
 
 	@Override
@@ -92,8 +92,8 @@ final class HttpClientDoOn extends HttpClientOperator implements ConnectionObser
 			onResponse.accept(connection.as(HttpClientOperations.class), connection);
 			return;
 		}
-		if (onRetryEnabled != null && newState == HttpClientState.RETRY_ENABLED) {
-			onRetryEnabled.accept(connection.as(HttpClientOperations.class), connection);
+		if (onRetry != null && newState == HttpClientState.RETRYING) {
+			onRetry.accept(connection.as(HttpClientOperations.class), connection);
 		}
 	}
 

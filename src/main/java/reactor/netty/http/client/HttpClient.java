@@ -681,16 +681,17 @@ public abstract class HttpClient {
 	/**
 	 * Setup a callback called when {@link HttpClientResponse} failed with
 	 * {@link reactor.netty.channel.AbortedException#isConnectionReset(Throwable)}
-	 * and {@link HttpClientState#RETRY_ENABLED} has been emitted.
+	 * and a retry to connect is about to be performed.
 	 *
-	 * @param doOnRetryEnabled a callback called when {@link HttpClientResponse} failed with
-	 * {@link reactor.netty.channel.AbortedException#isConnectionReset(Throwable)}
+	 * @param doOnRetry a callback called when {@link HttpClientResponse} failed with
+	 * {@link reactor.netty.channel.AbortedException#isConnectionReset(Throwable)} a retry to
+	 * connect is about to be performed
 	 *
 	 * @return a new {@link HttpClient}
 	 */
-	public final HttpClient doOnRetryEnabled(BiConsumer<? super HttpClientResponse, ? super Connection> doOnRetryEnabled) {
-		Objects.requireNonNull(doOnRetryEnabled, "doOnRetryEnabled");
-		return new HttpClientDoOn(this, null, null, null, null, null, null, doOnRetryEnabled);
+	public final HttpClient doOnRetry(BiConsumer<? super HttpClientResponse, ? super Connection> doOnRetry) {
+		Objects.requireNonNull(doOnRetry, "doOnRetry");
+		return new HttpClientDoOn(this, null, null, null, null, null, null, doOnRetry);
 	}
 
 	/**
@@ -754,16 +755,16 @@ public abstract class HttpClient {
 	 * {@link reactor.netty.channel.AbortedException#isConnectionReset(Throwable)}.
 	 * By default {@code retry once} is enabled.
 	 *
-	 * @param retryEnabled true if retry should be enabled, false otherwise
+	 * @param disableRetry true if {@code retry once} should be disabled, false otherwise
 	 *
 	 * @return a new {@link HttpClient}
 	 */
-	public final HttpClient retryEnabled(boolean retryEnabled) {
-		if (retryEnabled) {
-			return tcpConfiguration(RETRY_ATTR_CONFIG);
+	public final HttpClient disableRetry(boolean disableRetry) {
+		if (disableRetry) {
+			return tcpConfiguration(RETRY_ATTR_DISABLE);
 		}
 		else {
-			return tcpConfiguration(RETRY_ATTR_DISABLE);
+			return tcpConfiguration(RETRY_ATTR_CONFIG);
 		}
 	}
 

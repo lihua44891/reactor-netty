@@ -654,7 +654,7 @@ final class HttpClientConnect extends HttpClient {
 			}
 			else if (AbortedException.isConnectionReset(error) && !retried) {
 				((HttpClientOperations) connection).listener()
-				                                   .onStateChange(connection, HttpClientState.RETRY_ENABLED);
+				                                   .onStateChange(connection, HttpClientState.RETRYING);
 				if (log.isDebugEnabled()) {
 					log.debug(format(connection.channel(), "The connection observed an error, " +
 							"the request will be retried"), error);
